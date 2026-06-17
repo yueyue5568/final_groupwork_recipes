@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'providers/meal_provider.dart';
+import 'providers/theme_provider.dart';
 import 'pages/home_page.dart';
 import 'pages/favorites_page.dart';
 import 'pages/search_page.dart';
@@ -15,18 +16,42 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => MealProvider(),
-      child: MaterialApp(
-        title: '美食菜谱',
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          colorSchemeSeed: Colors.deepOrange,
-          useMaterial3: true,
-        ),
-        // TODO: 组员E — 添加暗色模式主题
-        // darkTheme: ThemeData(...),
-        home: const MainNavigator(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => MealProvider()),
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
+      ],
+      child: Consumer<ThemeProvider>(
+        builder: (context, themeProvider, child) {
+          return MaterialApp(
+            title: '美食菜谱',
+            debugShowCheckedModeBanner: false,
+            // 根据主题偏好自动切换明暗模式
+            themeMode: themeProvider.isDarkMode ? ThemeMode.dark : ThemeMode.light,
+            theme: ThemeData(
+              colorSchemeSeed: Colors.deepOrange,
+              useMaterial3: true,
+              brightness: Brightness.light,
+            ),
+            darkTheme: ThemeData(
+              colorSchemeSeed: Colors.deepOrange,
+              useMaterial3: true,
+              brightness: Brightness.dark,
+              appBarTheme: const AppBarTheme(
+                elevation: 0,
+                centerTitle: true,
+                backgroundColor: Colors.transparent,
+                foregroundColor: Colors.white70,
+              ),
+              cardTheme: CardThemeData(
+                color: Colors.grey.shade800,
+                elevation: 2,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              ),
+            ),
+            home: const MainNavigator(),
+          );
+        },
       ),
     );
   }
