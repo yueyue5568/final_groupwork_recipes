@@ -42,7 +42,25 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildBody(MealProvider provider) {
     if (provider.isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircularProgressIndicator(
+              color: Colors.orangeAccent,
+              strokeWidth: 3,
+            ),
+            SizedBox(height: 12),
+            Text(
+              '加载中...',
+              style: TextStyle(
+                color: Color(0xFF9E9E9E),
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
+      );
     }
 
     if (provider.errorMessage != null) {
@@ -78,50 +96,90 @@ class _HomePageState extends State<HomePage> {
               final selected = cat == provider.selectedCategory;
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 4),
-                child: FilterChip(
-                  label: Text(cat),
-                  selected: selected,
-                  onSelected: (_) => provider.filterByCategory(cat),
-                ),
-              );
+child: FilterChip(
+  label: Text(
+    cat,
+    style: TextStyle(
+      color: selected ? Colors.white : Colors.black87,
+      fontWeight: selected ? FontWeight.bold : FontWeight.normal,
+    ),
+  ),
+  selected: selected,
+  onSelected: (_) => provider.filterByCategory(cat),
+  backgroundColor: const Color(0xFFEEEEEE),
+  selectedColor: Colors.orangeAccent,
+  shape: RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(20),
+  ),
+  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+  showCheckmark: false,
+),
+
             },
           ),
         ),
         // 菜谱列表 — TODO: 组员A美化成卡片式列表
-        Expanded(
-          child: ListView.builder(
+Expanded(
+  child: RefreshIndicator(
+    color: Colors.orangeAccent,
+    onRefresh: () async {
+      await Future.delayed(const Duration(seconds: 1));
+      await context.read<MealProvider>().loadMeals();
+    },
+    child: ListView.builder(
+
             itemCount: provider.meals.length,
             itemBuilder: (ctx, i) {
               final meal = provider.meals[i];
-              return ListTile(
-                title: Text(meal.name),
-                subtitle: Text(
-                  '${meal.category} | ${meal.area} | ${meal.cookTime}分钟',
-                ),
-                trailing: IconButton(
-                  icon: Icon(
-                    provider.isFavorite(meal.id)
-                        ? Icons.favorite
-                        : Icons.favorite_border,
-                    color: provider.isFavorite(meal.id) ? Colors.red : null,
-                  ),
-                  onPressed: () {
-                    if (provider.isFavorite(meal.id)) {
-                      provider.removeFavorite(meal.id);
-                    } else {
-                      provider.addFavorite(meal);
-                    }
-                  },
-                ),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => MealDetailPage(meal: meal),
-                    ),
-                  );
-                },
-              );
+return Card(
+  margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+  elevation: 3,
+  shape: RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(12),
+  ),
+  child: ListTile(
+    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+    leading: CircleAvatar(
+      backgroundColor: Colors.orangeAccent,
+      child: Icon(
+        Icons.restaurant_menu,
+        color: Colors.white,
+        size: 20,
+      ),
+    ),
+    title: Text(
+      meal.name,
+      style: const TextStyle(fontWeight: FontWeight.bold),
+    ),
+    subtitle: Text(
+      '${meal.category} | ${meal.area} | ${meal.cookTime}分钟',
+    ),
+    trailing: IconButton(
+      icon: Icon(
+        provider.isFavorite(meal.id)
+            ? Icons.favorite
+            : Icons.favorite_border,
+        color: provider.isFavorite(meal.id) ? Colors.red : null,
+      ),
+      onPressed: () {
+        if (provider.isFavorite(meal.id)) {
+          provider.removeFavorite(meal.id);
+        } else {
+          provider.addFavorite(meal);
+        }
+      },
+    ),
+    onTap: () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => MealDetailPage(meal: meal),
+        ),
+      );
+    },
+  ),
+);
+
             },
           ),
         ),
