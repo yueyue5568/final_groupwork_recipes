@@ -23,9 +23,7 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     // 启动时加载远程数据
-    Future.microtask(() =>
-      context.read<MealProvider>().loadMeals()
-    );
+    Future.microtask(() => context.read<MealProvider>().loadMeals());
   }
 
   @override
@@ -97,10 +95,23 @@ class _HomePageState extends State<HomePage> {
               final meal = provider.meals[i];
               return ListTile(
                 title: Text(meal.name),
-                subtitle: Text('${meal.category} | ${meal.area} | ${meal.cookTime}分钟'),
-                trailing: Icon(
-                  provider.isFavorite(meal.id) ? Icons.favorite : Icons.favorite_border,
-                  color: provider.isFavorite(meal.id) ? Colors.red : null,
+                subtitle: Text(
+                  '${meal.category} | ${meal.area} | ${meal.cookTime}分钟',
+                ),
+                trailing: IconButton(
+                  icon: Icon(
+                    provider.isFavorite(meal.id)
+                        ? Icons.favorite
+                        : Icons.favorite_border,
+                    color: provider.isFavorite(meal.id) ? Colors.red : null,
+                  ),
+                  onPressed: () {
+                    if (provider.isFavorite(meal.id)) {
+                      provider.removeFavorite(meal.id);
+                    } else {
+                      provider.addFavorite(meal);
+                    }
+                  },
                 ),
                 onTap: () {
                   Navigator.push(
